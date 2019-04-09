@@ -1,0 +1,43 @@
+# vbase bridge configurations
+# general
+[general]
+    port=8080
+    # log level
+    # debug
+    # fatal
+    # error
+    # warning
+    # info
+    log_level="info"
+
+# loraser configurations
+[loraserver]
+    server="http://113.108.88.121:8900/api"
+    username="admin"
+    password="admin"
+
+# mqtt configurations
+[mqtt]
+  server="tcp://113.108.88.121:41883"
+  username=""
+  password=""
+  qos=0
+  clean_session=true
+  client_id="" 
+  ca_cert=""
+  tls_cert="" 
+  tls_key=""
+  uplink_topic_template="application/19/node/+/rx"
+#   ack_topic_template="application/+/device/+/ack"
+
+# postgres dsn (e.g.: postgres://user:password@hostname/database?sslmode=disable).
+[postgres]
+    auto_migrate=true 
+    dsn="postgres://vbasebridge:vbasebridge@192.168.181.85:25432/vbasebridge?sslmode=disable"
+
+# vbaseserver 
+[vbaseserver]
+    server="http://211.159.147.83:8083"
+    appkey="56f3a79ce58048658d61ca768b3aecae"
+    mapkey="a6b3fc1120b3478e8fe7fc2cb36e3b56"
+    page_url="http://140.143.130.127/v3/VBMaps/html/map.html"

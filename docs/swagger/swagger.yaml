@@ -1,0 +1,439 @@
+basePath: /api
+definitions:
+  controllers.Device:
+    properties:
+      device_eui:
+        type: string
+      icon:
+        type: string
+      name:
+        type: string
+    required:
+    - device_eui
+    - name
+    type: object
+  controllers.ResponseData:
+    properties:
+      errorCode:
+        type: integer
+      message:
+        type: string
+      result:
+        type: object
+      status:
+        type: integer
+    type: object
+  controllers.User:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    required:
+    - password
+    - user_name
+    type: object
+  controllers.UserPassword:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+host: 192.168.181.213:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a Wisdom Pension server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Wisdom Pension API
+  version: 0.1.0
+paths:
+  /device:
+    get:
+      consumes:
+      - application/json
+      description: 设备列表
+      parameters:
+      - description: page
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: perpage
+        in: query
+        name: perpage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 设备列表
+      tags:
+      - device
+    post:
+      consumes:
+      - application/json
+      description: 新增设备
+      parameters:
+      - description: create device info
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.Device'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 新增设备
+      tags:
+      - device
+    put:
+      consumes:
+      - application/json
+      description: 修改设备
+      parameters:
+      - description: update device info
+        in: body
+        name: device
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.Device'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 修改设备
+      tags:
+      - device
+  /device/{dev_eui}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除设备
+      parameters:
+      - description: device eui
+        in: path
+        name: dev_eui
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 删除设备
+      tags:
+      - device
+    get:
+      consumes:
+      - application/json
+      description: 设备明细
+      parameters:
+      - description: device eui
+        in: path
+        name: dev_eui
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 设备明细
+      tags:
+      - device
+  /mappage:
+    get:
+      consumes:
+      - application/json
+      description: vbase地图展示页URL
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: vbase地图展示页URL
+      tags:
+      - mappage
+  /user/changepwd:
+    put:
+      consumes:
+      - application/json
+      description: 更改密码
+      parameters:
+      - description: user password info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.UserPassword'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 更改密码
+      tags:
+      - user
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登陆
+      parameters:
+      - description: user login info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.User'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      summary: 登陆
+      tags:
+      - user
+  /vbase/count:
+    get:
+      consumes:
+      - application/json
+      description: vbase地图设备数量
+      parameters:
+      - description: status online/offline
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      summary: vbase地图设备数量
+      tags:
+      - vbaseapi
+  /vbase/detail:
+    get:
+      consumes:
+      - application/json
+      description: vbase地图设备详情
+      parameters:
+      - description: device id(eui)
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      summary: vbase地图设备详情
+      tags:
+      - vbaseapi
+  /vbase/list:
+    get:
+      consumes:
+      - application/json
+      description: vbase地图设备列表
+      parameters:
+      - description: status online/offline
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      summary: vbase地图设备列表
+      tags:
+      - vbaseapi
+  /vbase/track:
+    get:
+      consumes:
+      - application/json
+      description: vbase地图设备跟踪
+      parameters:
+      - description: device id(eui)
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: start timestamp
+        in: query
+        name: st
+        required: true
+        type: integer
+      - description: end timestamp
+        in: query
+        name: et
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      summary: vbase地图设备跟踪
+      tags:
+      - vbaseapi
+  /version:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: version
+      tags:
+      - version
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
