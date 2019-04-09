@@ -1,7 +1,7 @@
 # vbase bridge configurations
 # general
 [general]
-    port=8080
+    port=8088
     # log level
     # debug
     # fatal

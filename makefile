@@ -1,10 +1,11 @@
 .PHONY: build generate clean swagger
 GO_EXTRA_BUILD_ARGS=-a -installsuffix cgo
-build:
+build: swagger generate
 	# todo 
-	@echo "starting  complie"
+	@echo "starting vbasebridge complie"
 	@mkdir -p build 
 	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${GO_EXTRA_BUILD_ARGS} -o build/vbasebridge cmd/vbasebridge/main.go
+	@echo "complete vbasebride compile"
 
 generate:
 	@echo "generate migrate"
