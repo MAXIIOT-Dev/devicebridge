@@ -13,24 +13,24 @@ type Payload interface {
 
 // Angus 牛羊定位器
 type Angus struct {
-	FrameHeader     uint8     // 帧头
-	UTC             time.Time // UTC时间
-	OriginLatitude  uint32    // 原始纬度
-	OriginLongitude uint32    // 原始经度
-	Latitude        float64   // 纬度
-	Longitude       float64   // 经度
-	Speed           uint8     // 速度
-	Azimuth         uint16    // 方位角
-	Altitude        uint16    // 海拔
-	Code            uint8     // 功能码
-	DataLen         uint8     // 数据长度
-	DataField       Payload   // 数据域
-	CRC             uint8     // 校验码
+	FrameHeader     uint8     `json:"frame_header"` // 帧头
+	UTC             time.Time `json:"utc"`          // UTC时间
+	OriginLatitude  uint32    `json:"-"`            // 原始纬度
+	OriginLongitude uint32    `json:"-"`            // 原始经度
+	Latitude        float64   `json:"latitude"`     // 纬度
+	Longitude       float64   `json:"longitude"`    // 经度
+	Speed           uint8     `json:"speed"`        // 速度
+	Azimuth         uint16    `json:"azimuth"`      // 方位角
+	Altitude        uint16    `json:"altitude"`     // 海拔
+	Code            uint8     `json:"code"`         // 功能码
+	DataLen         uint8     `json:"data_len"`     // 数据长度
+	DataField       Payload   `json:"data_field"`   // 数据域
+	CRC             uint8     `json:"crc"`          // 校验码
 }
 
 // Unmarshal 数据解析
 func (a *Angus) Unmarshal(data []byte) (err error) {
-	go func() {
+	defer func() {
 		if rec := recover(); rec != nil {
 			err = fmt.Errorf("%v", rec)
 		}
@@ -102,9 +102,9 @@ func (a *Angus) Unmarshal(data []byte) (err error) {
 
 // AngusAlert 报警提醒
 type AngusAlert struct {
-	SOS        bool // SOS 警报
-	LowBattery bool // 低电压警报
-	Remove     bool // 摘除警报
+	SOS        bool `json:"sos"`         // SOS 警报
+	LowBattery bool `json:"low_battery"` // 低电压警报
+	Remove     bool `json:"remove"`      // 摘除警报
 }
 
 // Unmarshal  AngusAlert unmarshal
@@ -126,9 +126,9 @@ func (alert *AngusAlert) Unmarshal(data []byte) error {
 
 // AngusSensor 传感器信息
 type AngusSensor struct {
-	StepNumber uint16 // 步数
-	BusinessID uint32 // 业务 ID
-	Power      uint8  // 电量百分比
+	StepNumber uint16 `json:"step_number"` // 步数
+	BusinessID uint32 `json:"business_id"` // 业务 ID
+	Power      uint8  `json:"power"`       // 电量百分比
 }
 
 // Unmarshal AngusSensor Unmarshal
@@ -145,8 +145,8 @@ func (as *AngusSensor) Unmarshal(data []byte) error {
 
 // AngusHeartbeat 心跳包信息
 type AngusHeartbeat struct {
-	StepNumber uint16 // 步数
-	BusinessID uint32 // 业务 ID
+	StepNumber uint16 `json:"step_number"` // 步数
+	BusinessID uint32 `json:"business_id"` // 业务 ID
 }
 
 // Unmarshal AngusHeartbeat unmarshal

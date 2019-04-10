@@ -43,7 +43,7 @@ definitions:
     - new_password
     - old_password
     type: object
-host: 192.168.181.213:8080
+host: 192.168.181.85:8088
 info:
   contact:
     email: support@swagger.io
@@ -231,6 +231,37 @@ paths:
       summary: vbase地图展示页URL
       tags:
       - mappage
+  /user/add:
+    post:
+      consumes:
+      - application/json
+      description: 新增用户
+      parameters:
+      - description: create user info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.User'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ResponseData'
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 新增用户
+      tags:
+      - user
   /user/changepwd:
     put:
       consumes:

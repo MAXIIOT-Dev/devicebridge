@@ -108,3 +108,40 @@ func ChangeUserPassword(c *gin.Context) {
 
 	Response(c, http.StatusOK, 0, 0, "success", nil)
 }
+
+// CreateUser create user
+// @summary 新增用户
+// @description 新增用户
+// @tags user
+// @accept json
+// @produce json
+// @param user body controllers.User true "create user info"
+// @success 200 {object} controllers.ResponseData
+// @failure 500 {object} controllers.ResponseData
+// @security ApiKeyAuth
+// @router /user/add [post]
+func CreateUser(c *gin.Context) {
+	var usr User
+	err := c.ShouldBind(&usr)
+	if err != nil {
+		Response(c, http.StatusBadRequest, 0, 1, "用户名或密码不能为空", nil)
+		return
+	}
+
+	pwdHash, err := utils.Hash(usr.Password)
+	if err != nil {
+		Response(c, http.StatusBadRequest, 0, 1, "用户名或密码不能为空", nil)
+		return
+	}
+
+	err = storage.CreateUser(storage.User{
+		UserName:     usr.UserName,
+		PasswordHash: pwdHash,
+	})
+	if err != nil {
+		Response(c, http.StatusInternalServerError, 0, 1, err.Error(), nil)
+		return
+	}
+
+	Response(c, http.StatusBadRequest, 0, 0, "success", nil)
+}

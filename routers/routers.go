@@ -26,7 +26,7 @@ import (
 // @in header
 // @name Authorization
 
-// @host 192.168.181.213:8080
+// @host 192.168.181.85:8088
 // @BasePath /api
 func Route(mode string) *gin.Engine {
 	gin.SetMode(mode)
@@ -70,6 +70,7 @@ func Route(mode string) *gin.Engine {
 
 	gpUser := r.Group("/api/user")
 	{
+		gpUser.POST("/add", controllers.JWTAuth(), controllers.CreateUser)              // 新增用户
 		gpUser.POST("/login", controllers.Login)                                        // 用户登陆
 		gpUser.PUT("/changepwd", controllers.JWTAuth(), controllers.ChangeUserPassword) // 修改密码
 	}

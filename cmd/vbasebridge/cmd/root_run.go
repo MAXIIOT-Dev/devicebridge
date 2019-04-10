@@ -26,30 +26,30 @@ var levels = map[string]log.Level{
 }
 
 var run = func(cmd *cobra.Command, args []string) error {
-	errs := make(chan error, 1)
 	setVersion()
 	setLogLevel()
-
-	var port string
-	if config.Cfg.General.Port > 0 {
-		port = fmt.Sprintf(":%d", config.Cfg.General.Port)
-	} else {
-		port = ":8080"
-	}
-	r := routers.Route(gin.ReleaseMode)
-	serv := &http.Server{
-		Addr:    port,
-		Handler: r,
+	if err := connectPostgres(); err != nil {
+		return err
 	}
 
-	backend, err := mqtt.NewBackend(config.Cfg.Mqtt)
+	devs, err := storage.GetDevicesEUI()
 	if err != nil {
 		return err
 	}
-	backendServ := lorahandler.NewServer(backend)
 
+	mqtt.MQTTBackend = mqtt.NewBackend(config.Cfg.Mqtt, devs)
+	if err != nil {
+		return err
+	}
+	backendServ, err := lorahandler.NewServer(mqtt.MQTTBackend)
+	if err != nil {
+		return err
+	}
+
+	errs := make(chan error, 1)
+	serv := newHttpServer()
+	
 	tasks := []func() error{
-		connectPostgres,
 		startWebServer(serv, errs),
 		startBackendServer(backendServ),
 	}
@@ -61,6 +61,21 @@ var run = func(cmd *cobra.Command, args []string) error {
 	}
 	log.Error(<-errs)
 	return nil
+}
+
+func newHttpServer() *http.Server {
+	var port string
+	if config.Cfg.General.Port > 0 {
+		port = fmt.Sprintf(":%d", config.Cfg.General.Port)
+	} else {
+		port = ":8080"
+	}
+	r := routers.Route(gin.ReleaseMode)
+	serv := &http.Server{
+		Addr:    port,
+		Handler: r,
+	}
+	return serv
 }
 
 func setVersion() {

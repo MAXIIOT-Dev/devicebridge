@@ -7,9 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/maxiiot/vbaseBridge/storage"
-
 	"github.com/maxiiot/vbaseBridge/backend/mqtt"
+	"github.com/maxiiot/vbaseBridge/storage"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -21,8 +20,11 @@ type Server struct {
 }
 
 // NewServer return server point
-func NewServer(backend *mqtt.Backend) *Server {
-	return &Server{backend: backend}
+func NewServer(backend *mqtt.Backend) (*Server, error) {
+	if backend == nil {
+		return nil, fmt.Errorf("backend is nil")
+	}
+	return &Server{backend: backend}, nil
 }
 
 // Start server start
@@ -120,29 +122,32 @@ func createState(data mqtt.DataUpPayloadChan, ag *Angus) error {
 		Prop: map[string]interface{}{
 			"设备ID": data.DevEUI.String(),
 		},
+		Sensor: map[string]interface{}{
+			"速度":  ag.Speed,
+			"方位角": ag.Azimuth,
+			"海拔":  ag.Altitude,
+		},
 	}
 	if ag.DataField != nil {
-		detail := make(map[string]interface{})
 		switch v := ag.DataField.(type) {
 		case *AngusAlert:
 			if v.SOS {
-				detail["警报"] = "SOS"
+				st.Sensor["警报"] = "SOS"
 			}
 			if v.LowBattery {
-				detail["警报"] = "低电压"
+				st.Sensor["警报"] = "低电压"
 			}
 			if v.Remove {
-				detail["警报"] = "设备摘除"
+				st.Sensor["警报"] = "设备摘除"
 			}
 		case *AngusSensor:
-			detail["步数"] = v.StepNumber
-			detail["业务ID"] = v.BusinessID
-			detail["电量百分比"] = fmt.Sprintf("%d%%", v.Power)
+			st.Sensor["步数"] = v.StepNumber
+			st.Sensor["业务ID"] = v.BusinessID
+			st.Sensor["电量百分比"] = fmt.Sprintf("%d%%", v.Power)
 		case *AngusHeartbeat:
-			detail["步数"] = v.StepNumber
-			detail["业务ID"] = v.BusinessID
+			st.Sensor["步数"] = v.StepNumber
+			st.Sensor["业务ID"] = v.BusinessID
 		}
-		st.Sensor = detail
 	}
 	b, _ := json.Marshal(st)
 	ds.Detail = b

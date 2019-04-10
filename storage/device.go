@@ -100,8 +100,8 @@ func DeleteDevice(eui string) error {
 
 func delteDeviceInfo(tx *sql.Tx, devEUI EUI64) (err error) {
 	_, err = tx.Exec(`
-	delete from device 
-	where device_eui=$1`,
+		delete from device 
+		where device_eui=$1`,
 		devEUI,
 	)
 	if err != nil {
@@ -109,8 +109,8 @@ func delteDeviceInfo(tx *sql.Tx, devEUI EUI64) (err error) {
 	}
 
 	_, err = tx.Exec(`
-	delete from device_track
-	where device_eui=$1`,
+		delete from device_track
+		where device_eui=$1`,
 		devEUI,
 	)
 	if err != nil {
@@ -150,6 +150,26 @@ func GetDevices(limit, offset int) ([]Device, error) {
 	}
 
 	return devs, nil
+}
+
+// GetDevicesEUI get all devices eui
+func GetDevicesEUI() ([]string, error) {
+	var euis []EUI64
+	err := sqlx.Select(db, &euis, `
+		select device_eui
+		from device`,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	devEUIS := make([]string, 0, len(euis))
+	for _, eui := range euis {
+		devEUIS = append(devEUIS, eui.String())
+	}
+	return devEUIS, nil
 }
 
 // GetDevicesCount get count of device.

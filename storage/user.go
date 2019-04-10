@@ -25,6 +25,7 @@ func LoginUser(userName string) (User, error) {
 	return usr, nil
 }
 
+// UpdateUserPassword update user's password
 func UpdateUserPassword(usr User) error {
 	_, err := db.Exec(`
 		update users
@@ -38,4 +39,17 @@ func UpdateUserPassword(usr User) error {
 	}
 
 	return nil
+}
+
+// CreateUser create user
+func CreateUser(usr User) error {
+	_, err := db.Exec(`
+		insert into users(
+			user_name,
+			password_hash
+		)values($1,$2)`,
+		usr.UserName,
+		usr.PasswordHash,
+	)
+	return err
 }

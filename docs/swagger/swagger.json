@@ -15,7 +15,7 @@
         },
         "version": "0.1.0"
     },
-    "host": "192.168.181.213:8080",
+    "host": "192.168.181.85:8088",
     "basePath": "/api",
     "paths": {
         "/device": {
@@ -268,6 +268,54 @@
                     "mappage"
                 ],
                 "summary": "vbase地图展示页URL",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ResponseData"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ResponseData"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/add": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "新增用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "新增用户",
+                "parameters": [
+                    {
+                        "description": "create user info",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.User"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

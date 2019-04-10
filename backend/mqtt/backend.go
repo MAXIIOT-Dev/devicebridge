@@ -14,6 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// MQTTBackend
+var MQTTBackend *Backend
+
 // Config mqtt broker configuration
 type Config struct {
 	Server              string `mapstructure:"server" json:"server"`
@@ -34,16 +37,19 @@ type Backend struct {
 	wg           sync.WaitGroup
 	config       Config
 	rxPacketChan chan DataUpPayloadChan
-	// ackPacketChan chan ACKNotificationChan
-	conn paho.Client
+	conn         paho.Client
+	subDevs      []string // 只订阅添加的设备消息
+	devNotice    chan map[string]bool
 }
 
 // NewBackend retruns backend
-func NewBackend(c Config) (*Backend, error) {
+func NewBackend(c Config, devs []string) *Backend {
 	var err error
 	b := Backend{
 		config:       c,
 		rxPacketChan: make(chan DataUpPayloadChan),
+		subDevs:      devs,
+		devNotice:    make(chan map[string]bool),
 	}
 
 	opts := paho.NewClientOptions()
@@ -78,43 +84,54 @@ func NewBackend(c Config) (*Backend, error) {
 		}
 	}
 
-	return &b, nil
+	go b.noticeHandler()
+
+	return &b
 }
 
 func (b *Backend) onConnected(c paho.Client) {
 	log.Info("backend/mqtt: connected to mqtt server")
 
-	for {
-		log.WithFields(log.Fields{
-			"topic": b.config.UplinkTopicTemplate,
-			"qos":   b.config.QOS,
-		}).Info("backend/mqtt: subscribing to rx topic")
-		if token := b.conn.Subscribe(b.config.UplinkTopicTemplate, b.config.QOS, b.rxPacketHandler); token.Wait() && token.Error() != nil {
-			log.WithFields(log.Fields{
-				"topic": b.config.UplinkTopicTemplate,
-				"qos":   b.config.QOS,
-			}).Errorf("backend/mqtt: subscribe error: %s", token.Error())
-			time.Sleep(time.Second)
-			continue
+	if len(b.subDevs) > 0 {
+		topics := make(map[string]byte)
+		topicsField := make([]string, 0, len(b.subDevs))
+		for _, dev := range b.subDevs {
+			topic := fmt.Sprintf(b.config.UplinkTopicTemplate, dev)
+			topicsField = append(topicsField, topic)
+			topics[topic] = b.config.QOS
 		}
-		break
+		for {
+			log.WithFields(log.Fields{
+				"topics": topicsField,
+				"qos":    b.config.QOS,
+			}).Info("backend/mqtt: subscribing to rx topic")
+			if token := b.conn.SubscribeMultiple(topics, b.rxPacketHandler); token.Wait() && token.Error() != nil {
+				log.WithFields(log.Fields{
+					"topics": topicsField,
+					"qos":    b.config.QOS,
+				}).Errorf("backend/mqtt: subscribe error: %s", token.Error())
+				time.Sleep(time.Second)
+				continue
+			}
+			break
+		}
 	}
-
 }
 
 func (b *Backend) rxPacketHandler(c paho.Client, msg paho.Message) {
 	b.wg.Add(1)
 	defer b.wg.Done()
 
-	log.Info("mqtt: uplink frame received")
 	var rxdata DataUpPayload
 	if err := json.Unmarshal(msg.Payload(), &rxdata); err != nil {
 		log.Errorf("backend/mqtt: decode rx packet error: %s\n", err)
 		return
 	}
-	//test data
-	// rxdata.Data = "ff015c2c8cda16002a3f01ff"
 
+	log.WithFields(log.Fields{
+		"payload": rxdata.Data,
+		"device":  rxdata.DevEUI,
+	}).Info("mqtt: uplink frame received")
 	if data, err := hex.DecodeString(rxdata.Data); err == nil {
 		dataChan := DataUpPayloadChan{
 			Data:   data,
@@ -122,7 +139,7 @@ func (b *Backend) rxPacketHandler(c paho.Client, msg paho.Message) {
 		}
 		b.rxPacketChan <- dataChan
 	} else {
-		log.WithError(err).Error("deocde payload data error ")
+		log.WithError(err).Error("hex deocde payload data error ")
 	}
 }
 
@@ -130,27 +147,67 @@ func (b *Backend) onConnectionLost(c paho.Client, reason error) {
 	log.Errorf("backend/mqtt: mqtt connection error: %s", reason)
 }
 
+// Close unsubscribe message and close chans
 func (b *Backend) Close() error {
 	log.Info("backend/mqtt: closing backend")
 
-	log.WithField("topic", b.config.UplinkTopicTemplate).Info("mqtt: unsubscribing from uplink ")
-	if token := b.conn.Unsubscribe(b.config.UplinkTopicTemplate); token.Wait() && token.Error() != nil {
-		return fmt.Errorf("backend/mqtt: unsubscribe from %s error: %s", b.config.UplinkTopicTemplate, token.Error())
+	topic := fmt.Sprintf(b.config.UplinkTopicTemplate, "+")
+	log.WithField("topic", topic).Info("mqtt: unsubscribing from uplink ")
+	if token := b.conn.Unsubscribe(topic); token.Wait() && token.Error() != nil {
+		return fmt.Errorf("backend/mqtt: unsubscribe from %s error: %s", topic, token.Error())
 	}
 
 	log.Info("backend/mqtt: handling last messages")
 	b.wg.Wait()
 	close(b.rxPacketChan)
+	close(b.devNotice)
 	return nil
 }
 
+// RXPacketChan return rxpacketchan
 func (b *Backend) RXPacketChan() chan DataUpPayloadChan {
 	return b.rxPacketChan
 }
 
-// func (b *Backend) ACKPacketChan() chan ACKNotificationChan {
-// 	return b.ackPacketChan
-// }
+// DeviceNotice notice backend subscribe/unsubscribe message
+func (b *Backend) DeviceNotice(notice map[string]bool) {
+	b.devNotice <- notice
+}
+
+// noticeHandler添加设备时添加消息订阅，删除设备时取消消息订阅
+func (b *Backend) noticeHandler() {
+	for notice := range b.devNotice {
+		for dev, issub := range notice {
+			if issub {
+				topic := fmt.Sprintf(b.config.UplinkTopicTemplate, dev)
+				log.WithFields(log.Fields{
+					"topic": topic,
+					"qos":   b.config.QOS,
+				}).Info("backend/mqtt: subscribing to rx topic")
+
+				if token := b.conn.Subscribe(topic, b.config.QOS, b.rxPacketHandler); token.Wait() && token.Error() != nil {
+					log.WithFields(log.Fields{
+						"topics": topic,
+						"qos":    b.config.QOS,
+					}).Errorf("backend/mqtt: subscribe error: %s", token.Error())
+				}
+			} else {
+				topic := fmt.Sprintf(b.config.UplinkTopicTemplate, dev)
+				log.WithFields(log.Fields{
+					"topic": topic,
+					"qos":   b.config.QOS,
+				}).Info("backend/mqtt: unsubscribing to rx topic")
+
+				if token := b.conn.Unsubscribe(topic); token.Wait() && token.Error() != nil {
+					log.WithFields(log.Fields{
+						"topics": topic,
+						"qos":    b.config.QOS,
+					}).Errorf("backend/mqtt: unsubscribe error: %s", token.Error())
+				}
+			}
+		}
+	}
+}
 
 func newTLSConfig(cafile, certFile, certKeyFile string) (*tls.Config, error) {
 	if cafile == "" && certFile == "" && certKeyFile == "" {

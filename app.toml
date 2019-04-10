@@ -27,7 +27,7 @@
   ca_cert=""
   tls_cert="" 
   tls_key=""
-  uplink_topic_template="application/19/node/+/rx"
+  uplink_topic_template="application/+/node/%s/rx"
 #   ack_topic_template="application/+/device/+/ack"
 
 # postgres dsn (e.g.: postgres://user:password@hostname/database?sslmode=disable).
