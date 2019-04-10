@@ -1,4 +1,4 @@
-.PHONY: build generate clean swagger
+.PHONY: build generate clean swagger bdimage rmimage svimage
 GO_EXTRA_BUILD_ARGS=-a -installsuffix cgo
 build: swagger generate
 	# todo 
@@ -18,3 +18,16 @@ clean:
 swagger:
 	@echo "generate swagger api docs"
 	@swag init --generalInfo routers/routers.go 
+
+bdimage: 
+	@echo "build docker image"
+	@docker build -t maxiiot/vbasebride:v0.1 .
+
+rmimage:
+	@echo "rm vbasebridge image"
+	@docker rmi -f maxiiot/vbasebride:v0.1
+
+svimage:
+	@echo "save image"
+	@rm -f docker/images/vbasebridge.tar
+	@docker save -o docker/images/vbasebridge.tar  maxiiot/vbasebride:v0.1

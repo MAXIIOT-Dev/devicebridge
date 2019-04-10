@@ -6,3 +6,6 @@ build
 
 # exe
 *.exe
+
+# docker data
+docker/data/postgres

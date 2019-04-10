@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  vbasebridge:
+    image: maxiiot/vbasebride:v0.1
+    ports:
+      - 8088:8088
+    depends_on:
+      - postgres 
+    restart: always
+    volumes:
+      - ./config/vbasebridge/app.toml:/usr/local/vbaseBridge/app.toml
+      - ./data/vbasebridge/ui:/usr/local/vbaseBridge/ui
+  
+  postgres:
+    image: postgres:9.6-alpine
+    ports:
+      - 5432
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=vbasebridge
+      - POSTGRES_USER=vbasebridge
+      - POSTGRES_DB=vbasebridge
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
