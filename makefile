@@ -21,13 +21,13 @@ swagger:
 
 bdimage: 
 	@echo "build docker image"
-	@docker build -t maxiiot/vbasebride:v0.1 .
+	@docker build -t maxiiot/vbasebridge:v0.1.1 .
 
 rmimage:
 	@echo "rm vbasebridge image"
-	@docker rmi -f maxiiot/vbasebride:v0.1
+	@docker rmi -f maxiiot/vbasebridge:v0.1.1
 
 svimage:
 	@echo "save image"
 	@rm -f docker/images/vbasebridge.tar
-	@docker save -o docker/images/vbasebridge.tar  maxiiot/vbasebride:v0.1
+	@docker save -o docker/images/vbasebridge.tar  maxiiot/vbasebridge:v0.1.1

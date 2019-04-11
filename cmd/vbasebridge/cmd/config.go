@@ -10,7 +10,7 @@ import (
 
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "config of vbaseBridge",
+	Short: "print current config of vbaseBridge",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(config.Cfg)
 	},

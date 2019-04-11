@@ -2,7 +2,7 @@ version: "3"
 
 services:
   vbasebridge:
-    image: maxiiot/vbasebride:v0.1
+    image: maxiiot/vbasebridge:v0.1.1
     ports:
       - 8088:8088
     depends_on:

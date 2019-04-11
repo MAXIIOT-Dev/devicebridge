@@ -1,4 +1,4 @@
-package mqtt
+package backend
 
 import (
 	"time"
@@ -36,13 +36,13 @@ type DataUpPayload struct {
 	ApplicationName string     `json:"applicationName"`
 	Time            *time.Time `json:"time"`
 	// DeviceAddr      lorawan.DevAddr `json:"devaddr"`
-	DevEUI     storage.EUI64 `json:"deveui"`
+	DevEUI     storage.EUI64 `json:"deveui" binding:"required"`
 	DeviceName string        `json:"devname"`
 	GatewayEUI storage.EUI64 `json:"gatewayeui"`
 	RSSI       int32         `json:"rssi"`
 	LoRaSNR    float64       `json:"lsnr"`
 	Size       int           `json:"size"`
-	Data       string        `json:"data"`
+	Data       string        `json:"data" binding:"required"`
 	Base64Data string        `json:"b64_data"`
 	Frequency  float64       `json:"freq"`
 	DataRate   string        `json:"datr"`
@@ -55,21 +55,22 @@ type DataUpPayload struct {
 	Object interface{} `json:"object,omitempty"`
 }
 
+// DataUpPayloadChan DataUpPayloadChan
 type DataUpPayloadChan struct {
 	Data   []byte
 	DevEUI storage.EUI64
 }
 
-type ACKNotification struct {
-	ApplicationID   int64         `json:"applicationID,string"`
-	ApplicationName string        `json:"applicationName"`
-	DeviceName      string        `json:"deviceName"`
-	DevEUI          storage.EUI64 `json:"devEUI"`
-	Acknowledged    bool          `json:"acknowledged"`
-	FCnt            uint32        `json:"fCnt"`
-}
+// type ACKNotification struct {
+// 	ApplicationID   int64         `json:"applicationID,string"`
+// 	ApplicationName string        `json:"applicationName"`
+// 	DeviceName      string        `json:"deviceName"`
+// 	DevEUI          storage.EUI64 `json:"devEUI"`
+// 	Acknowledged    bool          `json:"acknowledged"`
+// 	FCnt            uint32        `json:"fCnt"`
+// }
 
-type ACKNotificationChan struct {
-	DevEUI string
-	FCnt   uint32
-}
+// type ACKNotificationChan struct {
+// 	DevEUI string
+// 	FCnt   uint32
+// }

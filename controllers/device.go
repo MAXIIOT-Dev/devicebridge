@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/maxiiot/vbaseBridge/backend/mqtt"
+	"github.com/maxiiot/vbaseBridge/backend/server"
+
 	"github.com/maxiiot/vbaseBridge/storage"
 
 	"github.com/gin-gonic/gin"
@@ -65,7 +66,8 @@ func CreateDevice(c *gin.Context) {
 		return
 	}
 
-	mqtt.MQTTBackend.DeviceNotice(map[string]bool{dev.DeviceEUI: true})
+	server.Serv.OnDeviceChange(map[string]bool{dev.DeviceEUI: true})
+
 	Response(c, http.StatusOK, 0, 0, "success", nil)
 }
 
@@ -199,7 +201,7 @@ func DeleteDevice(c *gin.Context) {
 		return
 	}
 
-	mqtt.MQTTBackend.DeviceNotice(map[string]bool{eui: false})
+	server.Serv.OnDeviceChange(map[string]bool{eui: false})
 
 	Response(c, http.StatusOK, 0, 0, "success", nil)
 }

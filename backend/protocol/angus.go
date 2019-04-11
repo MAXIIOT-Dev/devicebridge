@@ -1,4 +1,13 @@
-package lorahandler
+/*
+ * @Description: 设备相关协议解析
+ * @Copyright: Maxiiot(c) 2019
+ * @Author: tgq
+ * @LastEditors: tgq
+ * @Date: 2019-04-11 16:59:23
+ * @LastEditTime: 2019-04-11 16:59:31
+ */
+
+package protocol
 
 import (
 	"encoding/binary"

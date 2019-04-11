@@ -1,4 +1,4 @@
-package lorahandler
+package protocol
 
 import (
 	"encoding/hex"

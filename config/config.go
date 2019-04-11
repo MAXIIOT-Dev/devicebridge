@@ -9,7 +9,7 @@ import (
 // Cfg configuration entity
 var Cfg Configuration
 
-// Configuration app's configurations
+// Configuration vbasebridge app's configurations
 type Configuration struct {
 	General struct {
 		Port     int    `mapstructure:"port" json:"port"`
@@ -22,7 +22,11 @@ type Configuration struct {
 		Password string `mapstructure:"password" json:"password"`
 	} `mapstructure:"loraserver" json:"loraserver"`
 
-	Mqtt mqtt.Config `mapstructure:"mqtt" json:"mqtt"`
+	LoraBackend struct {
+		Type     string      `mapstructure:"type" json:"type"`
+		Mqtt     mqtt.Config `mapstructure:"mqtt" json:"mqtt"`
+		HTTPPort int         `mapstructure:"http_port" json:"http_port"`
+	} `mapstructure:"lora_backend" json:"lora_backend"`
 
 	Postgres struct {
 		AutoMigrate bool   `mapstructure:"auto_migrate" json:"auto_migrate"`

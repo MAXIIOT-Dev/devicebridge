@@ -1,3 +1,12 @@
+/*
+ * @Description: mqtt mqtt消息订阅处理
+ * @Copyright: Maxiiot(c) 2019
+ * @Author: tgq
+ * @LastEditors: tgq
+ * @Date: 2019-04-11 16:57:48
+ * @LastEditTime: 2019-04-11 17:32:12
+ */
+
 package mqtt
 
 import (
@@ -10,12 +19,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/maxiiot/vbaseBridge/backend"
+
 	paho "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 )
-
-// MQTTBackend
-var MQTTBackend *Backend
 
 // Config mqtt broker configuration
 type Config struct {
@@ -36,10 +44,10 @@ type Config struct {
 type Backend struct {
 	wg           sync.WaitGroup
 	config       Config
-	rxPacketChan chan DataUpPayloadChan
+	rxPacketChan chan backend.DataUpPayloadChan
 	conn         paho.Client
 	subDevs      []string // 只订阅添加的设备消息
-	devNotice    chan map[string]bool
+	subNotice    chan map[string]bool
 }
 
 // NewBackend retruns backend
@@ -47,9 +55,9 @@ func NewBackend(c Config, devs []string) *Backend {
 	var err error
 	b := Backend{
 		config:       c,
-		rxPacketChan: make(chan DataUpPayloadChan),
+		rxPacketChan: make(chan backend.DataUpPayloadChan),
 		subDevs:      devs,
-		devNotice:    make(chan map[string]bool),
+		subNotice:    make(chan map[string]bool),
 	}
 
 	opts := paho.NewClientOptions()
@@ -122,7 +130,7 @@ func (b *Backend) rxPacketHandler(c paho.Client, msg paho.Message) {
 	b.wg.Add(1)
 	defer b.wg.Done()
 
-	var rxdata DataUpPayload
+	var rxdata backend.DataUpPayload
 	if err := json.Unmarshal(msg.Payload(), &rxdata); err != nil {
 		log.Errorf("backend/mqtt: decode rx packet error: %s\n", err)
 		return
@@ -133,7 +141,7 @@ func (b *Backend) rxPacketHandler(c paho.Client, msg paho.Message) {
 		"device":  rxdata.DevEUI,
 	}).Info("mqtt: uplink frame received")
 	if data, err := hex.DecodeString(rxdata.Data); err == nil {
-		dataChan := DataUpPayloadChan{
+		dataChan := backend.DataUpPayloadChan{
 			Data:   data,
 			DevEUI: rxdata.DevEUI,
 		}
@@ -160,23 +168,23 @@ func (b *Backend) Close() error {
 	log.Info("backend/mqtt: handling last messages")
 	b.wg.Wait()
 	close(b.rxPacketChan)
-	close(b.devNotice)
+	close(b.subNotice)
 	return nil
 }
 
 // RXPacketChan return rxpacketchan
-func (b *Backend) RXPacketChan() chan DataUpPayloadChan {
+func (b *Backend) RXPacketChan() chan backend.DataUpPayloadChan {
 	return b.rxPacketChan
 }
 
-// DeviceNotice notice backend subscribe/unsubscribe message
-func (b *Backend) DeviceNotice(notice map[string]bool) {
-	b.devNotice <- notice
+// Notice notice
+func (b *Backend) Notice(notice map[string]bool) {
+	b.subNotice <- notice
 }
 
 // noticeHandler添加设备时添加消息订阅，删除设备时取消消息订阅
 func (b *Backend) noticeHandler() {
-	for notice := range b.devNotice {
+	for notice := range b.subNotice {
 		for dev, issub := range notice {
 			if issub {
 				topic := fmt.Sprintf(b.config.UplinkTopicTemplate, dev)

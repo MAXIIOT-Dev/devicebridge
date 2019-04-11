@@ -16,19 +16,24 @@
     username="admin"
     password="admin"
 
-# mqtt configurations
-[mqtt]
-  server="tcp://113.108.88.121:41883"
-  username=""
-  password=""
-  qos=0
-  clean_session=true
-  client_id="" 
-  ca_cert=""
-  tls_cert="" 
-  tls_key=""
-  uplink_topic_template="application/+/node/%s/rx"
-#   ack_topic_template="application/+/device/+/ack"
+# lora backend configurations
+[lora_backend]
+    # lora backend type option(mqtt/http)
+    type="http"
+    # http port
+    http_port=8880
+    [lora_backend.mqtt]
+        server="tcp://113.108.88.121:41883"
+        username=""
+        password=""
+        qos=0
+        clean_session=true
+        client_id="" 
+        ca_cert=""
+        tls_cert="" 
+        tls_key=""
+        uplink_topic_template="application/+/node/%s/rx"
+        #   ack_topic_template="application/+/device/+/ack"
 
 # postgres dsn (e.g.: postgres://user:password@hostname/database?sslmode=disable).
 [postgres]

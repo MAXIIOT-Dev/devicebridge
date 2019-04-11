@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
+	"time"
 
-	"github.com/maxiiot/vbaseBridge/backend/lorahandler"
-	"github.com/maxiiot/vbaseBridge/backend/mqtt"
+	"github.com/maxiiot/vbaseBridge/backend/server"
 	"github.com/maxiiot/vbaseBridge/config"
 	"github.com/maxiiot/vbaseBridge/controllers"
 	"github.com/maxiiot/vbaseBridge/routers"
@@ -25,33 +29,24 @@ var levels = map[string]log.Level{
 	log.DebugLevel.String(): log.DebugLevel,
 }
 
-var run = func(cmd *cobra.Command, args []string) error {
+var run = func(cmd *cobra.Command, args []string) (err error) {
 	setVersion()
 	setLogLevel()
 	if err := connectPostgres(); err != nil {
 		return err
 	}
 
-	devs, err := storage.GetDevicesEUI()
-	if err != nil {
-		return err
-	}
-
-	mqtt.MQTTBackend = mqtt.NewBackend(config.Cfg.Mqtt, devs)
-	if err != nil {
-		return err
-	}
-	backendServ, err := lorahandler.NewServer(mqtt.MQTTBackend)
+	server.Serv, err = server.NewServer(config.Cfg)
 	if err != nil {
 		return err
 	}
 
 	errs := make(chan error, 1)
 	serv := newHttpServer()
-	
+
 	tasks := []func() error{
 		startWebServer(serv, errs),
-		startBackendServer(backendServ),
+		startBackendServer(server.Serv),
 	}
 	for _, t := range tasks {
 		err := t()
@@ -59,7 +54,28 @@ var run = func(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	log.Error(<-errs)
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	log.Info("quit signal received: ", <-quit)
+
+	log.Println("Shutdown web Server ...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := serv.Shutdown(ctx); err != nil {
+		log.Fatal("Shutdown web Server error: ", err)
+	}
+	// catching ctx.Done(). timeout of 5 seconds.
+	select {
+	case <-ctx.Done():
+		log.Println("timeout of 5 seconds.")
+	}
+
+	log.Println("Shutdown backend server...")
+	if err := server.Serv.Stop(); err != nil {
+		log.Fatal("backend server shutdown error:", err)
+	}
+	log.Println("gracefull shutdown complete")
 	return nil
 }
 
@@ -109,7 +125,7 @@ func connectPostgres() error {
 	return nil
 }
 
-func startBackendServer(serv *lorahandler.Server) func() error {
+func startBackendServer(serv *server.Server) func() error {
 	return func() error {
 		serv.Start()
 		return nil
