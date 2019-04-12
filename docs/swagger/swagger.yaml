@@ -49,12 +49,12 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: This is a Wisdom Pension server.
+  description: vbase bridge swagger.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Wisdom Pension API
+  title: vbase bridge API
   version: 0.1.0
 paths:
   /device:

@@ -10,9 +10,9 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
-// @title Wisdom Pension API
+// @title vbase bridge API
 // @version 0.1.0
-// @description This is a Wisdom Pension server.
+// @description vbase bridge swagger.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support

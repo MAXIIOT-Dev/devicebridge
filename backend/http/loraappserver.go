@@ -4,14 +4,16 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:58:01
- * @LastEditTime: 2019-04-11 17:33:47
+ * @LastEditTime: 2019-04-12 14:15:33
  */
 
 package http
 
 import (
+	"context"
 	"encoding/hex"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/maxiiot/vbaseBridge/backend"
@@ -33,9 +35,16 @@ func New(addr string) *HttpBackend {
 		Addr:    addr,
 		Handler: r,
 	}
+
 	go func() {
-		log.Fatal(serv.ListenAndServe())
+		log.WithField("port", serv.Addr).Info("lora  http web server start.")
+		if err := serv.ListenAndServe(); err != nil {
+			if err != http.ErrServerClosed {
+				log.WithError(err).Fatal("lora http web server error.")
+			}
+		}
 	}()
+
 	return &HttpBackend{
 		rxPacketChan: dataChan,
 		httpServer:   serv,
@@ -50,7 +59,10 @@ func (b *HttpBackend) RXPacketChan() chan backend.DataUpPayloadChan {
 // Close close resource
 func (b *HttpBackend) Close() error {
 	close(b.rxPacketChan)
-	return b.httpServer.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return b.httpServer.Shutdown(ctx)
 }
 
 // Notice implement notice.

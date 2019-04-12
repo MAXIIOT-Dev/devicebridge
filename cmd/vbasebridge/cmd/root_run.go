@@ -41,11 +41,10 @@ var run = func(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	errs := make(chan error, 1)
 	serv := newHttpServer()
 
 	tasks := []func() error{
-		startWebServer(serv, errs),
+		startWebServer(serv),
 		startBackendServer(server.Serv),
 	}
 	for _, t := range tasks {
@@ -56,26 +55,38 @@ var run = func(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	quit := make(chan os.Signal)
+	exitChan := make(chan struct{})
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	log.Info("quit signal received: ", <-quit)
+	log.WithField("signal", <-quit).Info("quit signal received: ")
 
-	log.Println("Shutdown web Server ...")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := serv.Shutdown(ctx); err != nil {
-		log.Fatal("Shutdown web Server error: ", err)
-	}
-	// catching ctx.Done(). timeout of 5 seconds.
+	go func() {
+		log.Println("Shutdown web Server ...")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := serv.Shutdown(ctx); err != nil {
+			log.Error("Shutdown web Server error: ", err)
+		}
+		// catching ctx.Done(). timeout of 5 seconds.
+		// select {
+		// case <-ctx.Done():
+		// 	log.Println("timeout of 5 seconds.")
+		// }
+
+		log.Println("Shutdown backend server...")
+		if err := server.Serv.Stop(); err != nil {
+			log.Error("backend server shutdown error:", err)
+		}
+		log.Println("gracefull shutdown complete")
+		exitChan <- struct{}{}
+	}()
+
 	select {
-	case <-ctx.Done():
-		log.Println("timeout of 5 seconds.")
+	case <-exitChan:
+	case s := <-quit:
+		log.WithField("signal", s).Info("signal received, stopping immediately")
 	}
 
-	log.Println("Shutdown backend server...")
-	if err := server.Serv.Stop(); err != nil {
-		log.Fatal("backend server shutdown error:", err)
-	}
-	log.Println("gracefull shutdown complete")
 	return nil
 }
 
@@ -127,18 +138,22 @@ func connectPostgres() error {
 
 func startBackendServer(serv *server.Server) func() error {
 	return func() error {
+		log.WithField("type", serv.GetType()).Info("start backend server")
 		serv.Start()
 		return nil
 	}
 }
 
-func startWebServer(serv *http.Server, errs chan error) func() error {
+func startWebServer(serv *http.Server) func() error {
 	return func() error {
-		go func(errs chan error) {
+		go func() {
+			log.WithField("port", serv.Addr).Info("start web server.")
 			if err := serv.ListenAndServe(); err != nil {
-				errs <- err
+				if err != http.ErrServerClosed {
+					log.WithError(err).Fatal("web server error.")
+				}
 			}
-		}(errs)
+		}()
 		return nil
 	}
 }

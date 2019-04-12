@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:57:48
- * @LastEditTime: 2019-04-11 17:32:12
+ * @LastEditTime: 2019-04-12 14:26:20
  */
 
 package mqtt
@@ -55,7 +55,7 @@ func NewBackend(c Config, devs []string) *Backend {
 	var err error
 	b := Backend{
 		config:       c,
-		rxPacketChan: make(chan backend.DataUpPayloadChan),
+		rxPacketChan: make(chan backend.DataUpPayloadChan, 10),
 		subDevs:      devs,
 		subNotice:    make(chan map[string]bool),
 	}

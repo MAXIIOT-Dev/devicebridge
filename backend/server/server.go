@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 17:00:05
- * @LastEditTime: 2019-04-11 18:28:19
+ * @LastEditTime: 2019-04-12 11:38:09
  */
 
 package server
@@ -49,6 +49,7 @@ type BackendServer interface {
 type Server struct {
 	backend BackendServer
 	wg      sync.WaitGroup
+	typ     string
 }
 
 // NewServer return server point
@@ -60,7 +61,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 		typ = cfg.LoraBackend.Type
 	}
 
-	serv := &Server{}
+	serv := &Server{typ: typ}
 	if typ == TransportMQTT {
 		devs, err := storage.GetDevicesEUI()
 		if err != nil {
@@ -99,6 +100,11 @@ func (s *Server) Stop() error {
 	log.Info("waiting for pending actions to complete")
 	s.wg.Wait()
 	return nil
+}
+
+// GetType return backend server type.
+func (s *Server) GetType() string {
+	return s.typ
 }
 
 // OnDeviceChange notice backend subscribe/unsubscribe message
