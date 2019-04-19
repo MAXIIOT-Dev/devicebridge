@@ -59,7 +59,7 @@ func JWTAuth() gin.HandlerFunc {
 
 		claims, err := ParseToken(token)
 		if err != nil {
-			Response(c, http.StatusUnauthorized, 0, 0, err.Error(), nil)
+			Response(c, http.StatusUnauthorized, 0, 0, "token过期", nil)
 			c.Abort()
 			return
 		}

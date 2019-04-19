@@ -138,7 +138,6 @@ func connectPostgres() error {
 
 func startBackendServer(serv *server.Server) func() error {
 	return func() error {
-		log.WithField("type", serv.GetType()).Info("start backend server")
 		serv.Start()
 		return nil
 	}

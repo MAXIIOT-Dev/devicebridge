@@ -18,8 +18,7 @@
 
 # lora backend configurations
 [lora_backend]
-    # lora backend type option(mqtt/http)
-    type="mqtt"
+    # support http/mqtt backend
     # http port
     http_port=8880
     [lora_backend.mqtt]

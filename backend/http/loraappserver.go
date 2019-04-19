@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:58:01
- * @LastEditTime: 2019-04-12 14:15:33
+ * @LastEditTime: 2019-04-19 10:32:53
  */
 
 package http
@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/hex"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -49,11 +50,6 @@ func New(addr string) *HttpBackend {
 		rxPacketChan: dataChan,
 		httpServer:   serv,
 	}
-}
-
-// RXPacketChan return rxpacketchan
-func (b *HttpBackend) RXPacketChan() chan backend.DataUpPayloadChan {
-	return b.rxPacketChan
 }
 
 // Close close resource
@@ -99,4 +95,21 @@ func router(dataChan chan backend.DataUpPayloadChan) *gin.Engine {
 
 	r.POST("/lora/app", loraAppServer(dataChan))
 	return r
+}
+
+// HandleUplinks 处理lora上行数据
+func (b *HttpBackend) HandleUplinks(wg *sync.WaitGroup) {
+	for uplink := range b.rxPacketChan {
+		go func(uplink backend.DataUpPayloadChan) {
+			wg.Add(1)
+			defer wg.Done()
+			if err := backend.HandleUplink(uplink); err != nil {
+				log.WithFields(log.Fields{
+					"device": uplink.DevEUI,
+					"data":   hex.EncodeToString(uplink.Data),
+				}).Errorf("process device uplink data error: %s", err)
+			}
+		}(uplink)
+	}
+
 }

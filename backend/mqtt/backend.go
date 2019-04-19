@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:57:48
- * @LastEditTime: 2019-04-12 14:26:20
+ * @LastEditTime: 2019-04-19 10:33:22
  */
 
 package mqtt
@@ -172,11 +172,6 @@ func (b *Backend) Close() error {
 	return nil
 }
 
-// RXPacketChan return rxpacketchan
-func (b *Backend) RXPacketChan() chan backend.DataUpPayloadChan {
-	return b.rxPacketChan
-}
-
 // Notice notice
 func (b *Backend) Notice(notice map[string]bool) {
 	b.subNotice <- notice
@@ -248,4 +243,21 @@ func newTLSConfig(cafile, certFile, certKeyFile string) (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+// HandleUplinks 处理lora上行数据
+func (b *Backend) HandleUplinks(wg *sync.WaitGroup) {
+	for uplink := range b.rxPacketChan {
+		go func(uplink backend.DataUpPayloadChan) {
+			wg.Add(1)
+			defer wg.Done()
+			if err := backend.HandleUplink(uplink); err != nil {
+				log.WithFields(log.Fields{
+					"device": uplink.DevEUI,
+					"data":   hex.EncodeToString(uplink.Data),
+				}).Errorf("process device uplink data error: %s", err)
+			}
+		}(uplink)
+	}
+
 }
