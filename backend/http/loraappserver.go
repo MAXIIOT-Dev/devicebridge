@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:58:01
- * @LastEditTime: 2019-04-24 19:24:02
+ * @LastEditTime: 2019-04-25 09:25:01
  */
 
 package http
@@ -39,7 +39,7 @@ func New(addr string) *HttpBackend {
 	}
 
 	go func() {
-		log.WithField("port", serv.Addr).Info("lora  http web server start.")
+		log.WithField("port", serv.Addr).Info("lora  http api server start.")
 		if err := serv.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
 				log.WithError(err).Fatal("lora http web server error.")

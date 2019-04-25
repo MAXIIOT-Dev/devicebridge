@@ -2,9 +2,9 @@
 GO_EXTRA_BUILD_ARGS=-a -installsuffix cgo
 build: swagger generate
 	# todo 
-	@echo "starting vbasebridge complie"
+	@echo "starting devicebridge complie"
 	@mkdir -p build 
-	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${GO_EXTRA_BUILD_ARGS} -o build/vbasebridge cmd/vbasebridge/main.go
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${GO_EXTRA_BUILD_ARGS} -o build/devicebridge cmd/devicebridge/main.go
 	@echo "complete vbasebride compile"
 
 generate:
@@ -21,13 +21,13 @@ swagger:
 
 bdimage: 
 	@echo "build docker image"
-	@docker build -t maxiiot/devicebridge:v0.1.1 .
+	@docker build -t maxiiot/devicebridge:v0.1.0 .
 
 rmimage:
-	@echo "rm vbasebridge image"
-	@docker rmi -f maxiiot/devicebridge:v0.1.1
+	@echo "rm devicebridge image"
+	@docker rmi -f maxiiot/devicebridge:v0.1.0
 
 svimage:
 	@echo "save image"
-	@rm -f docker/images/vbasebridge.tar
-	@docker save -o docker/images/vbasebridge.tar  maxiiot/devicebridge:v0.1.1
+	@rm -f docker/images/devicebridge.tar
+	@docker save -o docker/images/devicebridge.tar  maxiiot/devicebridge:v0.1.0

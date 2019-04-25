@@ -44,7 +44,6 @@ func Route(mode string) *gin.Engine {
 	r.Use(cors.New(corsCfg))
 
 	r.Static("/static", "./ui/static/")
-	r.StaticFile("/", "./ui/index.html")
 
 	gpRoot := r.Group("/api", controllers.JWTAuth())
 	{

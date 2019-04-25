@@ -1,0 +1,52 @@
+# vbase bridge configurations
+# general
+[general]
+    port=8088
+    # log level
+    # debug
+    # fatal
+    # error
+    # warning
+    # info
+    log_level="info"
+
+# loraser configurations
+# [loraserver]
+#     server="http://localhost:8080/api"
+#     username="admin"
+#     password="admin"
+
+# lora backend configurations
+[lora_backend]
+    # sport http/mqtt backend
+    # http port
+    http_port=8880
+    [lora_backend.mqtt]
+        server="ws://mosquitto:1883"
+        username=""
+        password=""
+        qos=0
+        clean_session=true
+        client_id="" 
+        ca_cert=""
+        tls_cert="" 
+        tls_key=""
+        uplink_topic_template="application/+/node/%s/rx"
+        #   ack_topic_template="application/+/device/+/ack"
+
+# postgres dsn (e.g.: postgres://user:password@hostname/database?sslmode=disable).
+[postgres]
+    auto_migrate=true 
+    dsn="postgres://devicebridge:devicebridge@postgres_devicebridge:5432/devicebridge?sslmode=disable"
+
+[publisher]
+   [publisher.mqtt]
+        server="tcp://broker.hivemq.com:1883"
+        username=""
+        password=""
+        qos=0
+        clean_session=true
+        client_id="maxiiot-device-bridge" 
+        ca_cert=""
+        tls_cert="" 
+        tls_key=""

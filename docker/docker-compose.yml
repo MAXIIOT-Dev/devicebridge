@@ -1,25 +1,32 @@
 version: "3"
 
+networks:
+  lora_default:
+    external: true
+
 services:
-  vbasebridge:
-    image: maxiiot/devicebridge:v0.1.1
+  devicebridge:
+    image: maxiiot/devicebridge:v0.1.0
     ports:
       - 8088:8088
     depends_on:
       - postgres 
     restart: always
     volumes:
-      - ./config/vbasebridge/app.toml:/usr/local/vbaseBridge/app.toml
-      - ./data/vbasebridge/ui:/usr/local/vbaseBridge/ui
+      - ./config/devicebridge/app.toml:/usr/local/devicebridge/app.toml
+    networks:
+      - lora_default
   
-  postgres:
+  postgres_devicebridge:
     image: postgres:9.6-alpine
     ports:
       - 5432
     restart: always
     environment:
-      - POSTGRES_PASSWORD=vbasebridge
-      - POSTGRES_USER=vbasebridge
-      - POSTGRES_DB=vbasebridge
+      - POSTGRES_PASSWORD=devicebridge
+      - POSTGRES_USER=devicebridge
+      - POSTGRES_DB=devicebridge
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - lora_default

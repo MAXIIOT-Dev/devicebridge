@@ -252,7 +252,6 @@ func (b *Backend) HandleUplinks(conn paho.Client, wg *sync.WaitGroup) {
 		go func(uplink backend.DataUpPayloadChan) {
 			wg.Add(1)
 			defer wg.Done()
-			log.Println("debug:", "handle uplink.")
 			if err := backend.HandleUplink(conn, uplink); err != nil {
 				log.WithFields(log.Fields{
 					"device": uplink.DevEUI,

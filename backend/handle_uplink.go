@@ -27,17 +27,27 @@ func HandleUplink(conn paho.Client, data DataUpPayloadChan) error {
 			return err
 		}
 		for _, hum := range hums.Hums {
+
 			topictemp := fmt.Sprintf(topic, data.DevEUI, "temp")
-			log.Infof("publish %s %.1f", topictemp, hum.Temperature)
 			if token := conn.Publish(topictemp, 0, false, fmt.Sprintf("%.1f", hum.Temperature)); token.Wait() && token.Error() != nil {
-				log.Error(token.Error())
+				log.WithError(token.Error()).Errorf("publish %s %.1f", topictemp, hum.Temperature)
+			} else {
+				log.Infof("publish success,topic:%s msg:%.1f", topictemp, hum.Temperature)
 			}
+
 			topichum := fmt.Sprintf(topic, data.DevEUI, "hum")
-			log.Infof("publish %s %.1f", topichum, hum.Humidity)
-			conn.Publish(topichum, 0, false, fmt.Sprintf("%.1f", hum.Humidity))
+			if token := conn.Publish(topichum, 0, false, fmt.Sprintf("%.1f", hum.Humidity)); token.Wait() && token.Error() != nil {
+				log.WithError(token.Error()).Errorf("publish %s %.1f", topichum, hum.Humidity)
+			} else {
+				log.Infof("publish success,topic:%s msg:%.1f", topichum, hum.Humidity)
+			}
+
 			topicele := fmt.Sprintf(topic, data.DevEUI, "ele")
-			log.Infof("publish %s %.1f", topicele, hum.Electricity)
-			conn.Publish(topicele, 0, false, fmt.Sprintf("%.1f", hum.Electricity))
+			if token := conn.Publish(topicele, 0, false, fmt.Sprintf("%.1f", hum.Electricity)); token.Wait() && token.Error() != nil {
+				log.WithError(token.Error()).Errorf("publish %s %.1f", topicele, hum.Electricity)
+			} else {
+				log.Infof("publish success,topic: %s msg: %.1f", topicele, hum.Electricity)
+			}
 
 		}
 	case storage.ProtocolSmoke:
@@ -51,13 +61,19 @@ func HandleUplink(conn paho.Client, data DataUpPayloadChan) error {
 		}
 		if smoke.IsHeartBeat {
 			topicsmoke := fmt.Sprintf(topic, data.DevEUI, "smoke")
-			log.Infof("publish %s %s", topicsmoke, "heartbeat")
-			conn.Publish(topicsmoke, 0, false, "heartbeat")
+			if token := conn.Publish(topicsmoke, 0, false, "heartbeat"); token.Wait() && token.Error() != nil {
+				log.WithError(token.Error()).Errorf("publish %s %s", topicsmoke, "heartbeat")
+			} else {
+				log.Infof("publish success,topic: %s msg: %s", topicsmoke, "heartbeat")
+			}
 		}
 		if smoke.Alarm != nil {
 			topicsmoke := fmt.Sprintf(topic, data.DevEUI, "smoke")
-			log.Infof("publish %s %s", topicsmoke, smoke.Alarm.String())
-			conn.Publish(topicsmoke, 0, false, smoke.Alarm.String())
+			if token := conn.Publish(topicsmoke, 0, false, smoke.Alarm.String()); token.Wait() && token.Error() != nil {
+				log.WithError(token.Error()).Errorf("publish %s %s", topicsmoke, smoke.Alarm.String())
+			} else {
+				log.Infof("publish success,topic: %s msg: %s", topicsmoke, smoke.Alarm.String())
+			}
 		}
 
 	}

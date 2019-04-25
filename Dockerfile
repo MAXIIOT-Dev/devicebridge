@@ -1,11 +1,9 @@
 FROM busybox 
  
-WORKDIR /usr/local/vbaseBridge/
+WORKDIR /usr/local/devicebridge/
 
 # RUN mkdir config
 RUN mkdir ui
-COPY ./build/vbasebridge .
-# COPY ./ui ./ui
-
-# COPY ./config.toml /usr/local/NursingHome/
-ENTRYPOINT ["./vbasebridge"]
+COPY ./build/devicebridge .
+ 
+ENTRYPOINT ["./devicebridge"]
