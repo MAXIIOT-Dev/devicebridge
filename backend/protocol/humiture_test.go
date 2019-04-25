@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Humitureunmarshal(t *testing.T) {
-	data, err := hex.DecodeString("ff0200015cc056d001011b0401460151ff")
+	data, err := hex.DecodeString("ff0200015cc11b9401011706013b014aff")
 	if err != nil {
 		t.Error("decode data error:", err)
 	}

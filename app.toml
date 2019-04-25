@@ -11,10 +11,10 @@
     log_level="info"
 
 # loraser configurations
-[loraserver]
-    server="http://113.108.88.121:8900/api"
-    username="admin"
-    password="admin"
+# [loraserver]
+#     server="http://113.108.88.121:8900/api"
+#     username="admin"
+#     password="admin"
 
 # lora backend configurations
 [lora_backend]
@@ -22,16 +22,16 @@
     # http port
     http_port=8880
     [lora_backend.mqtt]
-        server="tcp://113.108.88.121:41883"
+        server="tcp://broker.hivemq.com:1883"
         username=""
         password=""
         qos=0
         clean_session=true
-        client_id="" 
+        client_id="maxiiot-device-lora" 
         ca_cert=""
         tls_cert="" 
         tls_key=""
-        uplink_topic_template="application/+/node/%s/rx"
+        uplink_topic_template="application/+/device/%s/rx"
         #   ack_topic_template="application/+/device/+/ack"
 
 # postgres dsn (e.g.: postgres://user:password@hostname/database?sslmode=disable).

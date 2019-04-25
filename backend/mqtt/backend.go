@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:57:48
- * @LastEditTime: 2019-04-24 20:14:22
+ * @LastEditTime: 2019-04-25 10:26:52
  */
 
 package mqtt
@@ -99,7 +99,22 @@ func NewBackend(c Config, devs []string) *Backend {
 
 func (b *Backend) onConnected(c paho.Client) {
 	log.Info("backend/mqtt: connected to mqtt server")
-
+	// for {
+	// 	topic := b.config.UplinkTopicTemplate
+	// 	log.WithFields(log.Fields{
+	// 		"topics": topic,
+	// 		"qos":    b.config.QOS,
+	// 	}).Info("backend/mqtt: subscribing to rx topic")
+	// 	if token := b.conn.Subscribe(topic, b.config.QOS, b.rxPacketHandler); token.Wait() && token.Error() != nil {
+	// 		log.WithFields(log.Fields{
+	// 			"topics": topic,
+	// 			"qos":    b.config.QOS,
+	// 		}).Errorf("backend/mqtt: subscribe error: %s", token.Error())
+	// 		time.Sleep(time.Second * 2)
+	// 		continue
+	// 	}
+	// 	break
+	// }
 	if len(b.subDevs) > 0 {
 		topics := make(map[string]byte)
 		topicsField := make([]string, 0, len(b.subDevs))
@@ -118,7 +133,7 @@ func (b *Backend) onConnected(c paho.Client) {
 					"topics": topicsField,
 					"qos":    b.config.QOS,
 				}).Errorf("backend/mqtt: subscribe error: %s", token.Error())
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 2)
 				continue
 			}
 			break
@@ -159,10 +174,12 @@ func (b *Backend) onConnectionLost(c paho.Client, reason error) {
 func (b *Backend) Close() error {
 	log.Info("backend/mqtt: closing backend")
 
-	topic := fmt.Sprintf(b.config.UplinkTopicTemplate, "+")
-	log.WithField("topic", topic).Info("mqtt: unsubscribing from uplink ")
-	if token := b.conn.Unsubscribe(topic); token.Wait() && token.Error() != nil {
-		return fmt.Errorf("backend/mqtt: unsubscribe from %s error: %s", topic, token.Error())
+	if b.conn.IsConnected() {
+		topic := fmt.Sprintf(b.config.UplinkTopicTemplate, "+")
+		log.WithField("topic", topic).Info("mqtt: unsubscribing from uplink ")
+		if token := b.conn.Unsubscribe(topic); token.Wait() && token.Error() != nil {
+			log.Errorf("backend/mqtt: unsubscribe from %s error: %s", topic, token.Error())
+		}
 	}
 
 	log.Info("backend/mqtt: handling last messages")

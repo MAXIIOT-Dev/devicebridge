@@ -167,6 +167,7 @@ func (h *Humitures) Unmarshal(b []byte) (err error) {
 		}
 
 		elelen := humlen + int(b[start]) + 1
+		start++
 		var _ele int8
 		for start < elelen {
 			if b[start]&0xa0 == 0xa0 {
