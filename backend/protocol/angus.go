@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:59:23
- * @LastEditTime: 2019-04-11 16:59:31
+ * @LastEditTime: 2019-04-24 16:56:27
  */
 
 package protocol
@@ -14,11 +14,6 @@ import (
 	"fmt"
 	"time"
 )
-
-// Payload define data field interface
-type Payload interface {
-	Unmarshal([]byte) error
-}
 
 // Angus 牛羊定位器
 type Angus struct {

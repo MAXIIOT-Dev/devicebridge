@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"github.com/maxiiot/vbaseBridge/controllers"
-	_ "github.com/maxiiot/vbaseBridge/docs"
+	"github.com/maxiiot/devicebridge/controllers"
+	_ "github.com/maxiiot/devicebridge/docs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,6 @@ import (
 // @in header
 // @name Authorization
 
-// @host 192.168.181.85:8088
 // @BasePath /api
 func Route(mode string) *gin.Engine {
 	gin.SetMode(mode)
@@ -49,8 +48,7 @@ func Route(mode string) *gin.Engine {
 
 	gpRoot := r.Group("/api", controllers.JWTAuth())
 	{
-		gpRoot.GET("/version", controllers.GetVersion)   // app version
-		gpRoot.GET("/mappage", controllers.VbaseMapPage) // vbase地图页URL
+		gpRoot.GET("/version", controllers.GetVersion) // app version
 
 		gpRoot.GET("/device", controllers.ListDevice)               // 设备列表
 		gpRoot.POST("/device", controllers.CreateDevice)            // 新增设备
@@ -58,14 +56,6 @@ func Route(mode string) *gin.Engine {
 		gpRoot.PUT("/device", controllers.UpdateDevice)             // 修改设备信息
 		gpRoot.DELETE("/device/:dev_eui", controllers.DeleteDevice) // 删除设备
 
-	}
-
-	vbase := r.Group("api/vbase")
-	{
-		vbase.GET("/list", controllers.VbaseList)     // vbase设备列表
-		vbase.GET("/count", controllers.VbaseCount)   // vbase设备数量
-		vbase.GET("/track", controllers.VbaseTrack)   // vbase设备定位跟踪
-		vbase.GET("/detail", controllers.VbaseDetail) // vbase设备详情
 	}
 
 	gpUser := r.Group("/api/user")

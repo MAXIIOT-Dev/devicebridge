@@ -1,125 +1,66 @@
 package backend
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"time"
 
-	"github.com/maxiiot/vbaseBridge/backend/protocol"
-	"github.com/maxiiot/vbaseBridge/storage"
+	paho "github.com/eclipse/paho.mqtt.golang"
+	"github.com/maxiiot/devicebridge/backend/protocol"
+	"github.com/maxiiot/devicebridge/storage"
+	log "github.com/sirupsen/logrus"
 )
 
+var topic = "device/%s/%s"
+
 // HandleUplink handle uplink data
-func HandleUplink(data DataUpPayloadChan) error {
-	if data.Data[0] == 0xAA {
-		ag := &protocol.Angus{}
-		err := ag.Unmarshal(data.Data)
-		if err != nil {
-			return err
-		}
-
-		if err := createTrack(data, ag); err != nil {
-			return err
-		}
-
-		if err := createState(data, ag); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func createTrack(data DataUpPayloadChan, ag *protocol.Angus) error {
-	track := storage.DeviceTrack{
-		DeviceEUI: data.DevEUI,
-		CreatedAt: time.Now(),
-		Location: storage.GPSPoint{
-			Latitude:  ag.Latitude,
-			Longitude: ag.Longitude,
-		},
-		Altitude: ag.Altitude,
-	}
-
-	err := storage.CreateDeviceTrack(track)
+func HandleUplink(conn paho.Client, data DataUpPayloadChan) error {
+	dev, err := storage.GetDeviceByEUI(data.DevEUI.String())
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func createState(data DataUpPayloadChan, ag *protocol.Angus) error {
-	now := time.Now()
-	ds := storage.DeviceState{
-		DeviceEUI:  data.DevEUI,
-		LastSeenAt: &now,
-		Location: &storage.GPSPoint{
-			Latitude:  ag.Latitude,
-			Longitude: ag.Longitude,
-		},
-	}
-	var st = state{
-		ID: data.DevEUI.String(),
-		Point: point{
-			ID: data.DevEUI.String(),
-			Geometry: geometry{
-				Type:        "Point",
-				Coordinates: []float64{ag.Longitude, ag.Latitude},
-			},
-		},
-		Prop: map[string]interface{}{
-			"设备ID":   data.DevEUI.String(),
-			"最后上传时间": now.Format(time.RFC3339),
-		},
-		Sensor: map[string]interface{}{
-			"速度":  ag.Speed,
-			"方位角": ag.Azimuth,
-			"海拔":  ag.Altitude,
-		},
-	}
-	if ag.DataField != nil {
-		switch v := ag.DataField.(type) {
-		case *protocol.AngusAlert:
-			if v.SOS {
-				st.Sensor["警报"] = "SOS"
-			}
-			if v.LowBattery {
-				st.Sensor["警报"] = "低电压"
-			}
-			if v.Remove {
-				st.Sensor["警报"] = "设备摘除"
-			}
-		case *protocol.AngusSensor:
-			st.Sensor["步数"] = v.StepNumber
-			st.Sensor["业务ID"] = v.BusinessID
-			st.Sensor["电量百分比"] = fmt.Sprintf("%d%%", v.Power)
-		case *protocol.AngusHeartbeat:
-			st.Sensor["步数"] = v.StepNumber
-			st.Sensor["业务ID"] = v.BusinessID
+	switch dev.ProtocolType {
+	case storage.ProtocolHumiture:
+		var hums protocol.Humitures
+		err := hums.Unmarshal(data.Data)
+		if err != nil {
+			return err
 		}
+		for _, hum := range hums.Hums {
+			topictemp := fmt.Sprintf(topic, data.DevEUI, "temp")
+			log.Infof("publish %s %.1f", topictemp, hum.Temperature)
+			if token := conn.Publish(topictemp, 0, false, fmt.Sprintf("%.1f", hum.Temperature)); token.Wait() && token.Error() != nil {
+				log.Error(token.Error())
+			}
+			topichum := fmt.Sprintf(topic, data.DevEUI, "hum")
+			log.Infof("publish %s %.1f", topichum, hum.Humidity)
+			conn.Publish(topichum, 0, false, fmt.Sprintf("%.1f", hum.Humidity))
+			topicele := fmt.Sprintf(topic, data.DevEUI, "ele")
+			log.Infof("publish %s %.1f", topicele, hum.Electricity)
+			conn.Publish(topicele, 0, false, fmt.Sprintf("%.1f", hum.Electricity))
+
+		}
+	case storage.ProtocolSmoke:
+		if len(data.Data) < 5 {
+			return errors.New("data format error.")
+		}
+		var smoke protocol.Smoke
+		err := smoke.Unmarshal(data.Data[4:])
+		if err != nil {
+			return err
+		}
+		if smoke.IsHeartBeat {
+			topicsmoke := fmt.Sprintf(topic, data.DevEUI, "smoke")
+			log.Infof("publish %s %s", topicsmoke, "heartbeat")
+			conn.Publish(topicsmoke, 0, false, "heartbeat")
+		}
+		if smoke.Alarm != nil {
+			topicsmoke := fmt.Sprintf(topic, data.DevEUI, "smoke")
+			log.Infof("publish %s %s", topicsmoke, smoke.Alarm.String())
+			conn.Publish(topicsmoke, 0, false, smoke.Alarm.String())
+		}
+
 	}
-	b, _ := json.Marshal(st)
-	ds.Detail = b
 
-	err := storage.CreateAndUpdateState(ds)
-	return err
-}
-
-type state struct {
-	ID     string                 `json:"id"`
-	Point  point                  `json:"point"`
-	Prop   map[string]interface{} `json:"prop"`
-	Sensor map[string]interface{} `json:"sensor"`
-}
-
-// Point vbase point
-type point struct {
-	ID       string   `json:"id"`
-	Geometry geometry `json:"geometry"`
-}
-
-// Geometry vbase geometry
-type geometry struct {
-	Type        string    `json:"type"`
-	Coordinates []float64 `json:"coordinates"`
+	return nil
 }

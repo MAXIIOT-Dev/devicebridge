@@ -37,11 +37,16 @@
 # postgres dsn (e.g.: postgres://user:password@hostname/database?sslmode=disable).
 [postgres]
     auto_migrate=true 
-    dsn="postgres://vbasebridge:vbasebridge@192.168.181.85:25432/vbasebridge?sslmode=disable"
+    dsn="postgres://devicebridge:devicebridge@192.168.181.85:25432/devicebridge?sslmode=disable"
 
-# vbaseserver 
-[vbaseserver]
-    server="http://211.159.147.83:8083"
-    appkey="56f3a79ce58048658d61ca768b3aecae"
-    mapkey="a6b3fc1120b3478e8fe7fc2cb36e3b56"
-    page_url="http://140.143.130.127/v3/VBMaps/html/map.html"
+[publisher]
+   [publisher.mqtt]
+        server="tcp://broker.hivemq.com:1883"
+        username=""
+        password=""
+        qos=0
+        clean_session=true
+        client_id="maxiiot-device-bridge" 
+        ca_cert=""
+        tls_cert="" 
+        tls_key=""

@@ -3,7 +3,7 @@ package backend
 import (
 	"time"
 
-	"github.com/maxiiot/vbaseBridge/storage"
+	"github.com/maxiiot/devicebridge/storage"
 )
 
 // Location details.

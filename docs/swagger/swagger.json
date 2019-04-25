@@ -15,7 +15,7 @@
         },
         "version": "0.1.0"
     },
-    "host": "192.168.181.85:8088",
+    "host": "{{.Host}}",
     "basePath": "/api",
     "paths": {
         "/device": {
@@ -250,42 +250,6 @@
                 }
             }
         },
-        "/mappage": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "vbase地图展示页URL",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "mappage"
-                ],
-                "summary": "vbase地图展示页URL",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
         "/user/add": {
             "post": {
                 "security": [
@@ -425,180 +389,6 @@
                 }
             }
         },
-        "/vbase/count": {
-            "get": {
-                "description": "vbase地图设备数量",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vbaseapi"
-                ],
-                "summary": "vbase地图设备数量",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "status online/offline",
-                        "name": "status",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
-        "/vbase/detail": {
-            "get": {
-                "description": "vbase地图设备详情",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vbaseapi"
-                ],
-                "summary": "vbase地图设备详情",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "device id(eui)",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
-        "/vbase/list": {
-            "get": {
-                "description": "vbase地图设备列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vbaseapi"
-                ],
-                "summary": "vbase地图设备列表",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "status online/offline",
-                        "name": "status",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
-        "/vbase/track": {
-            "get": {
-                "description": "vbase地图设备跟踪",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vbaseapi"
-                ],
-                "summary": "vbase地图设备跟踪",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "device id(eui)",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "start timestamp",
-                        "name": "st",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "end timestamp",
-                        "name": "et",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "$ref": "#/definitions/controllers.ResponseData"
-                        }
-                    }
-                }
-            }
-        },
         "/version": {
             "get": {
                 "security": [
@@ -639,17 +429,13 @@
         "controllers.Device": {
             "type": "object",
             "required": [
-                "device_eui",
-                "name"
+                "device_eui"
             ],
             "properties": {
                 "device_eui": {
                     "type": "string"
                 },
-                "icon": {
-                    "type": "string"
-                },
-                "name": {
+                "protocol_type": {
                     "type": "string"
                 }
             }
@@ -657,9 +443,6 @@
         "controllers.ResponseData": {
             "type": "object",
             "properties": {
-                "errorCode": {
-                    "type": "integer"
-                },
                 "message": {
                     "type": "string"
                 },

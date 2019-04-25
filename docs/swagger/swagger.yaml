@@ -4,18 +4,13 @@ definitions:
     properties:
       device_eui:
         type: string
-      icon:
-        type: string
-      name:
+      protocol_type:
         type: string
     required:
     - device_eui
-    - name
     type: object
   controllers.ResponseData:
     properties:
-      errorCode:
-        type: integer
       message:
         type: string
       result:
@@ -43,7 +38,7 @@ definitions:
     - new_password
     - old_password
     type: object
-host: 192.168.181.85:8088
+host: '{{.Host}}'
 info:
   contact:
     email: support@swagger.io
@@ -208,29 +203,6 @@ paths:
       summary: 设备明细
       tags:
       - device
-  /mappage:
-    get:
-      consumes:
-      - application/json
-      description: vbase地图展示页URL
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-      security:
-      - ApiKeyAuth: []
-      summary: vbase地图展示页URL
-      tags:
-      - mappage
   /user/add:
     post:
       consumes:
@@ -322,124 +294,6 @@ paths:
       summary: 登陆
       tags:
       - user
-  /vbase/count:
-    get:
-      consumes:
-      - application/json
-      description: vbase地图设备数量
-      parameters:
-      - description: status online/offline
-        in: query
-        name: status
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-      summary: vbase地图设备数量
-      tags:
-      - vbaseapi
-  /vbase/detail:
-    get:
-      consumes:
-      - application/json
-      description: vbase地图设备详情
-      parameters:
-      - description: device id(eui)
-        in: query
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-      summary: vbase地图设备详情
-      tags:
-      - vbaseapi
-  /vbase/list:
-    get:
-      consumes:
-      - application/json
-      description: vbase地图设备列表
-      parameters:
-      - description: status online/offline
-        in: query
-        name: status
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-      summary: vbase地图设备列表
-      tags:
-      - vbaseapi
-  /vbase/track:
-    get:
-      consumes:
-      - application/json
-      description: vbase地图设备跟踪
-      parameters:
-      - description: device id(eui)
-        in: query
-        name: id
-        required: true
-        type: string
-      - description: start timestamp
-        in: query
-        name: st
-        required: true
-        type: integer
-      - description: end timestamp
-        in: query
-        name: et
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/controllers.ResponseData'
-            type: object
-      summary: vbase地图设备跟踪
-      tags:
-      - vbaseapi
   /version:
     get:
       consumes:

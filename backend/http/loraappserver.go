@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:58:01
- * @LastEditTime: 2019-04-19 10:32:53
+ * @LastEditTime: 2019-04-24 19:24:02
  */
 
 package http
@@ -17,8 +17,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/maxiiot/vbaseBridge/backend"
+	"github.com/maxiiot/devicebridge/backend"
 
+	paho "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -98,12 +99,13 @@ func router(dataChan chan backend.DataUpPayloadChan) *gin.Engine {
 }
 
 // HandleUplinks 处理lora上行数据
-func (b *HttpBackend) HandleUplinks(wg *sync.WaitGroup) {
+func (b *HttpBackend) HandleUplinks(conn paho.Client, wg *sync.WaitGroup) {
+	// log.Println("debug: http handlerup")
 	for uplink := range b.rxPacketChan {
 		go func(uplink backend.DataUpPayloadChan) {
 			wg.Add(1)
 			defer wg.Done()
-			if err := backend.HandleUplink(uplink); err != nil {
+			if err := backend.HandleUplink(conn, uplink); err != nil {
 				log.WithFields(log.Fields{
 					"device": uplink.DevEUI,
 					"data":   hex.EncodeToString(uplink.Data),

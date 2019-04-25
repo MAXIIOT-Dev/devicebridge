@@ -8,12 +8,20 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+const (
+	// ProtocolHumiture humiture protocol
+	ProtocolHumiture = "humiture"
+	// ProtocolSmoke smoke protocol
+	ProtocolSmoke = "smoke"
+	// ProtocolDefault default protocol
+	ProtocolDefault = "digital"
+)
+
 // Device define device model
 type Device struct {
-	DeviceEUI EUI64  `db:"device_eui" json:"device_eui"`
-	Name      string `db:"device_name" json:"device_name"`
-	Icon      string `db:"icon" json:"icon"`
-	Status    string `db:"status" json:"status"`
+	DeviceEUI    EUI64     `db:"device_eui" json:"device_eui"`
+	ProtocolType string    `db:"protocol_type" json:"protocol_type"`
+	CreatedAt    time.Time `db:"created_at" json:"created_at"`
 }
 
 // CreateDevice create device on database
@@ -22,14 +30,12 @@ func CreateDevice(dev Device) error {
 	_, err := db.Exec(`
 		insert into device (
 			device_eui,
-			device_name,
-			icon,
+			protocol_type,
 			created_at,
 			updated_at
-		)values($1,$2,$3,$4,$4)`,
+		)values($1,$2,$3,$3)`,
 		dev.DeviceEUI,
-		dev.Name,
-		dev.Icon,
+		dev.ProtocolType,
 		now,
 	)
 	return err
@@ -46,8 +52,8 @@ func GetDeviceByEUI(eui string) (Device, error) {
 
 	err = sqlx.Get(db, &dev, `
 		select device_eui,
-		device_name,
-		icon
+		protocol_type,
+		created_at
 		from device
 		where device_eui=$1`,
 		devEUI,
@@ -63,12 +69,10 @@ func GetDeviceByEUI(eui string) (Device, error) {
 func UpdateDevice(dev Device) error {
 	_, err := db.Exec(`
 		update device set
-		device_name=$2,
-		icon=$3
+		protocol_type=$2
 		where device_eui=$1`,
 		dev.DeviceEUI,
-		dev.Name,
-		dev.Icon,
+		dev.ProtocolType,
 	)
 
 	return err
@@ -108,24 +112,6 @@ func delteDeviceInfo(tx *sql.Tx, devEUI EUI64) (err error) {
 		return
 	}
 
-	_, err = tx.Exec(`
-		delete from device_track
-		where device_eui=$1`,
-		devEUI,
-	)
-	if err != nil {
-		return
-	}
-
-	_, err = tx.Exec(`
-		delete from device_state
-		where device_eui=$1`,
-		devEUI,
-	)
-	if err != nil {
-		return
-	}
-
 	return nil
 }
 
@@ -134,13 +120,9 @@ func GetDevices(limit, offset int) ([]Device, error) {
 	var devs []Device
 	err := sqlx.Select(db, &devs, `
 		select d.device_eui,
-		d.device_name,
-		d.icon,
-		case when ds.last_seen_at > (current_timestamp - (5*interval '1 minute')) then 'online'
-		     else 'offline' end as status
-		from device d
-		left join device_state ds 
-		on d.device_eui=ds.device_eui
+		d.protocol_type,
+		d.created_at
+		from device d 
 		limit $1 offset $2`,
 		limit,
 		offset,

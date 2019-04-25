@@ -9,3 +9,6 @@ build
 
 # docker data
 docker/data/postgres
+
+# test
+test

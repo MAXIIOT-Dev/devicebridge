@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:57:48
- * @LastEditTime: 2019-04-19 10:33:22
+ * @LastEditTime: 2019-04-24 20:14:22
  */
 
 package mqtt
@@ -19,7 +19,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/maxiiot/vbaseBridge/backend"
+	"github.com/maxiiot/devicebridge/backend"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
@@ -246,12 +246,14 @@ func newTLSConfig(cafile, certFile, certKeyFile string) (*tls.Config, error) {
 }
 
 // HandleUplinks 处理lora上行数据
-func (b *Backend) HandleUplinks(wg *sync.WaitGroup) {
+func (b *Backend) HandleUplinks(conn paho.Client, wg *sync.WaitGroup) {
+	// log.Println("debug: mqtt handlerup")
 	for uplink := range b.rxPacketChan {
 		go func(uplink backend.DataUpPayloadChan) {
 			wg.Add(1)
 			defer wg.Done()
-			if err := backend.HandleUplink(uplink); err != nil {
+			log.Println("debug:", "handle uplink.")
+			if err := backend.HandleUplink(conn, uplink); err != nil {
 				log.WithFields(log.Fields{
 					"device": uplink.DevEUI,
 					"data":   hex.EncodeToString(uplink.Data),

@@ -7,7 +7,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/maxiiot/vbaseBridge/storage"
+	"github.com/maxiiot/devicebridge/storage"
 )
 
 var (
@@ -52,14 +52,14 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		if token == "" {
-			Response(c, http.StatusUnauthorized, 0, 0, "请求未携带token，无权限访问", nil)
+			Response(c, http.StatusUnauthorized, 0, "请求未携带token，无权限访问", nil)
 			c.Abort()
 			return
 		}
 
 		claims, err := ParseToken(token)
 		if err != nil {
-			Response(c, http.StatusUnauthorized, 0, 0, "token过期", nil)
+			Response(c, http.StatusUnauthorized, 0, "token过期", nil)
 			c.Abort()
 			return
 		}

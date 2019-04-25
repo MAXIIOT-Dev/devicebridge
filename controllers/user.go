@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/maxiiot/vbaseBridge/storage"
-	"github.com/maxiiot/vbaseBridge/utils"
+	"github.com/maxiiot/devicebridge/storage"
+	"github.com/maxiiot/devicebridge/utils"
 )
 
 // User login info
@@ -35,30 +35,30 @@ func Login(c *gin.Context) {
 	var user User
 	err := c.ShouldBind(&user)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, "请输入用户名和密码", nil)
+		Response(c, http.StatusBadRequest, 1, "请输入用户名和密码", nil)
 		return
 	}
 
 	usr, err := storage.LoginUser(user.UserName)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, "用户名不存在", nil)
+		Response(c, http.StatusBadRequest, 1, "用户名不存在", nil)
 		return
 	}
 
 	err = utils.Compare(user.Password, usr.PasswordHash)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, "密码错误", nil)
+		Response(c, http.StatusBadRequest, 1, "密码错误", nil)
 		return
 	}
 
 	token, err := CreateToken(usr)
 	if err != nil {
 		msg := fmt.Sprintf("生成JWT错误: %s", err)
-		Response(c, http.StatusInternalServerError, 0, 1, msg, nil)
+		Response(c, http.StatusInternalServerError, 1, msg, nil)
 		return
 	}
 
-	Response(c, http.StatusOK, 0, 0, "success", gin.H{
+	Response(c, http.StatusOK, 0, "success", gin.H{
 		"jwt": token,
 	})
 }
@@ -77,7 +77,7 @@ func ChangeUserPassword(c *gin.Context) {
 	var user_pwd UserPassword
 	err := c.ShouldBind(&user_pwd)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, err.Error(), nil)
+		Response(c, http.StatusBadRequest, 1, err.Error(), nil)
 		return
 	}
 
@@ -85,28 +85,28 @@ func ChangeUserPassword(c *gin.Context) {
 
 	olduser, err := storage.LoginUser(username)
 	if err != nil {
-		Response(c, http.StatusUnauthorized, 0, 1, "请先登陆", nil)
+		Response(c, http.StatusUnauthorized, 1, "请先登陆", nil)
 		return
 	}
 
 	err = utils.Compare(user_pwd.OldPassword, olduser.PasswordHash)
 	if err != nil {
-		Response(c, http.StatusUnauthorized, 0, 1, "旧密码错误", nil)
+		Response(c, http.StatusUnauthorized, 1, "旧密码错误", nil)
 		return
 	}
 
 	olduser.PasswordHash, err = utils.Hash(user_pwd.NewPassword)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, err.Error(), nil)
+		Response(c, http.StatusBadRequest, 1, err.Error(), nil)
 		return
 	}
 	err = storage.UpdateUserPassword(olduser)
 	if err != nil {
-		Response(c, http.StatusInternalServerError, 0, 1, err.Error(), nil)
+		Response(c, http.StatusInternalServerError, 1, err.Error(), nil)
 		return
 	}
 
-	Response(c, http.StatusOK, 0, 0, "success", nil)
+	Response(c, http.StatusOK, 0, "success", nil)
 }
 
 // CreateUser create user
@@ -124,13 +124,13 @@ func CreateUser(c *gin.Context) {
 	var usr User
 	err := c.ShouldBind(&usr)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, "用户名或密码不能为空", nil)
+		Response(c, http.StatusBadRequest, 1, "用户名或密码不能为空", nil)
 		return
 	}
 
 	pwdHash, err := utils.Hash(usr.Password)
 	if err != nil {
-		Response(c, http.StatusBadRequest, 0, 1, "用户名或密码不能为空", nil)
+		Response(c, http.StatusBadRequest, 1, "用户名或密码不能为空", nil)
 		return
 	}
 
@@ -139,9 +139,9 @@ func CreateUser(c *gin.Context) {
 		PasswordHash: pwdHash,
 	})
 	if err != nil {
-		Response(c, http.StatusInternalServerError, 0, 1, err.Error(), nil)
+		Response(c, http.StatusInternalServerError, 1, err.Error(), nil)
 		return
 	}
 
-	Response(c, http.StatusBadRequest, 0, 0, "success", nil)
+	Response(c, http.StatusBadRequest, 0, "success", nil)
 }
