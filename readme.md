@@ -5,6 +5,7 @@
 2. 设备管理
 
 3. lora数据处解析后发布到MqttBroker,支持设备类型如下:
+
 > angus
 
 > humiture
