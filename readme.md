@@ -4,7 +4,11 @@
 
 2. 设备管理
 
-3. 提供万备地图相关接口
+3. lora数据处解析后发布到MqttBroker,支持设备类型如下:
+> angus
 
-4. lora数据处理服务
-> 支持MQTT/HTTP方式
+> humiture
+
+> smoke
+
+### 对接LoraServer,支持MQTT/HTTP方式
