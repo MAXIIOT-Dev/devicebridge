@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 16:57:48
- * @LastEditTime: 2019-04-25 10:26:52
+ * @LastEditTime: 2019-04-25 10:54:09
  */
 
 package mqtt
@@ -264,7 +264,7 @@ func newTLSConfig(cafile, certFile, certKeyFile string) (*tls.Config, error) {
 
 // HandleUplinks 处理lora上行数据
 func (b *Backend) HandleUplinks(conn paho.Client, wg *sync.WaitGroup) {
-	// log.Println("debug: mqtt handlerup")
+	log.Info("start lora mqtt uplink handle")
 	for uplink := range b.rxPacketChan {
 		go func(uplink backend.DataUpPayloadChan) {
 			wg.Add(1)

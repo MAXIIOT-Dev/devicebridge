@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 17:00:05
- * @LastEditTime: 2019-04-24 19:52:46
+ * @LastEditTime: 2019-04-25 10:52:21
  */
 
 package server
@@ -81,7 +81,7 @@ func (s *Server) Start() {
 		go func(backend BackendServer) {
 			s.wg.Add(1)
 			defer s.wg.Done()
-			go backend.HandleUplinks(s.publisher, &s.wg)
+			backend.HandleUplinks(s.publisher, &s.wg)
 		}(s.backends[key])
 	}
 

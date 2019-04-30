@@ -100,7 +100,7 @@ func router(dataChan chan backend.DataUpPayloadChan) *gin.Engine {
 
 // HandleUplinks 处理lora上行数据
 func (b *HttpBackend) HandleUplinks(conn paho.Client, wg *sync.WaitGroup) {
-	// log.Println("debug: http handlerup")
+	log.Info("start lora http uplink handle")
 	for uplink := range b.rxPacketChan {
 		go func(uplink backend.DataUpPayloadChan) {
 			wg.Add(1)

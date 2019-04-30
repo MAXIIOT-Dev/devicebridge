@@ -91,7 +91,7 @@ paths:
       - application/json
       description: 新增设备
       parameters:
-      - description: create device info
+      - description: t
         in: body
         name: device
         required: true

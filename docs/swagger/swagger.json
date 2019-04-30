@@ -134,7 +134,7 @@
                 "summary": "新增设备",
                 "parameters": [
                     {
-                        "description": "create device info",
+                        "description": "t",
                         "name": "device",
                         "in": "body",
                         "required": true,
