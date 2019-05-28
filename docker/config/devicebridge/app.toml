@@ -9,20 +9,14 @@
     # warning
     # info
     log_level="info"
-
-# loraser configurations
-# [loraserver]
-#     server="http://localhost:8080/api"
-#     username="admin"
-#     password="admin"
-
+ 
 # lora backend configurations
 [lora_backend]
     # sport http/mqtt backend
     # http port
     http_port=8880
     [lora_backend.mqtt]
-        server="ws://mosquitto:1883"
+        server="tcp://mosquitto:1883"
         username=""
         password=""
         qos=0

@@ -5,6 +5,7 @@ definitions:
       device_eui:
         type: string
       protocol_type:
+        example: optional(humiture/smoke/digital)
         type: string
     required:
     - device_eui
@@ -91,7 +92,7 @@ paths:
       - application/json
       description: 新增设备
       parameters:
-      - description: t
+      - description: create device info
         in: body
         name: device
         required: true

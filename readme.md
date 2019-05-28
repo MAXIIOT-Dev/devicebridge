@@ -1,15 +1,18 @@
-# lora设备解析适配层
-### 功能说明
-1. 用户管理
+# loraDevice Resolution Adaptation Layer
+### Function Description
+1. User management
 
-2. 设备管理
+2. Equipment management
 
-3. lora数据处解析后发布到MqttBroker,支持设备类型如下:
+3. The lora data is parsed and published to MqttBroker. The supported device types are as follows:
 
-> angus
+> Maxiiot/angus
 
-> humiture
+> Maxiiot/humiture
 
-> smoke
+> Maxiiot/smoke
 
-### 对接LoraServer,支持MQTT/HTTP方式
+### Connect LoraServer, supporting MQTT/HTTP mode
+### How to use
+I haven't done UI yet, I can add devices through swagger first.
+The swagger URL:http://localhost:8088/swagger/index.html

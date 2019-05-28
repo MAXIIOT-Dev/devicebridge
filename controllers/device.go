@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/maxiiot/devicebridge/backend/server"
-
 	"github.com/maxiiot/devicebridge/storage"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 // Device for request device.
 type Device struct {
 	DeviceEUI    string `json:"device_eui" binding:"required"`
-	ProtocolType string `json:"protocol_type"`
+	ProtocolType string `json:"protocol_type" example:"optional(humiture/smoke/digital)"`
 }
 
 func (dev *Device) validate() error {

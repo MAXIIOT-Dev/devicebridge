@@ -4,7 +4,7 @@
  * @Author: tgq
  * @LastEditors: tgq
  * @Date: 2019-04-11 17:00:05
- * @LastEditTime: 2019-04-25 10:52:21
+ * @LastEditTime: 2019-05-28 11:13:20
  */
 
 package server
@@ -26,6 +26,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Serv .
 var Serv *Server
 
 // BackendServer define backend server
@@ -41,20 +42,21 @@ type BackendServer interface {
 // Server 后台服务
 // support http/mqtt backend
 type Server struct {
-	backends  map[string]BackendServer
+	backends  []BackendServer
 	wg        sync.WaitGroup
 	publisher paho.Client
 }
 
 // NewServer return server point
 func NewServer(cfg config.Configuration) (*Server, error) {
-	backends := make(map[string]BackendServer)
+	backends := make([]BackendServer, 0, 2)
 
 	devs, err := storage.GetDevicesEUI()
 	if err != nil {
 		return nil, err
 	}
-	backends["mqtt"] = mqtt.NewBackend(cfg.LoraBackend.Mqtt, devs)
+	mqttSer := mqtt.NewBackend(cfg.LoraBackend.Mqtt, devs)
+	backends = append(backends, mqttSer)
 
 	var addr string
 	if cfg.LoraBackend.HTTPPort > 0 {
@@ -64,7 +66,7 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 	}
 	httpserv := http.New(addr)
 
-	backends["http"] = httpserv
+	backends = append(backends, httpserv)
 
 	conn, err := newPublisher(cfg.Publisher.Mqtt)
 	if err != nil {
@@ -77,12 +79,12 @@ func NewServer(cfg config.Configuration) (*Server, error) {
 
 // Start server start
 func (s *Server) Start() {
-	for key, _ := range s.backends {
+	for idx := range s.backends {
 		go func(backend BackendServer) {
 			s.wg.Add(1)
 			defer s.wg.Done()
 			backend.HandleUplinks(s.publisher, &s.wg)
-		}(s.backends[key])
+		}(s.backends[idx])
 	}
 
 }

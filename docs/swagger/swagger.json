@@ -134,7 +134,7 @@
                 "summary": "新增设备",
                 "parameters": [
                     {
-                        "description": "t",
+                        "description": "create device info",
                         "name": "device",
                         "in": "body",
                         "required": true,
@@ -436,7 +436,8 @@
                     "type": "string"
                 },
                 "protocol_type": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "optional(humiture/smoke/digital)"
                 }
             }
         },

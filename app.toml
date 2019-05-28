@@ -10,19 +10,13 @@
     # info
     log_level="info"
 
-# loraser configurations
-# [loraserver]
-#     server="http://113.108.88.121:8900/api"
-#     username="admin"
-#     password="admin"
-
 # lora backend configurations
 [lora_backend]
     # sport http/mqtt backend
     # http port
     http_port=8880
     [lora_backend.mqtt]
-        server="tcp://broker.hivemq.com:1883"
+        server="tcp://localhost:21883"
         username=""
         password=""
         qos=0
